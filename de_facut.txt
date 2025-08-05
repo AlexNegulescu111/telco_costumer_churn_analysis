@@ -1,0 +1,8 @@
+push pe github
+interfata streamlit cu grafice, filtre si predictii
+vezi ordinea
+
+git remote add origin https://github.com/USERNAME/REPO.git
+git add .
+git commit -m "initial commit"
+git push origin main
