@@ -132,5 +132,5 @@ GitHub Actions workflow runs:
 
 ## Contact
 
-Created by [Your Name] — looking for entry-level roles in **Data analysis/ Data Science / ML Engineering**  
+Created by Alexandru NEGULESCU — looking for entry-level roles in **Data analysis/ Data Science / ML Engineering**  
 Let's connect on [LinkedIn](linkedin.com/in/alexandru-negulescu-555a8323b) or check my [GitHub](https://github.com/AlexNegulescu111)
