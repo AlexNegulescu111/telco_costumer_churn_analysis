@@ -1,6 +1,6 @@
 # Telco Customer Churn Analysis & Prediction
 
-![CI/CD](https://github.com/AlexNegulescu111/telco_costumer_churn_analysis/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/AlexNegulescu111/telco_costumer_churn_analysis/actions/workflows/main.yml/badge.svg)](https://github.com/AlexNegulescu111/telco_costumer_churn_analysis/actions/workflows/main.yml)
 
 This project focuses on analyzing customer churn in the telecom sector and predicting the likelihood of churn using machine learning models. It combines **business analysis**, **EDA**, **feature engineering**, and **model interpretability**, with an interactive **Streamlit dashboard** for BI and predictions.
 
@@ -18,7 +18,7 @@ This project focuses on analyzing customer churn in the telecom sector and predi
 ## Project Structure
 
 ```
-customer_churn_project/
+telco_costumer_churn_analysis/
 ├── data/                    # CSV input + saved KPIs
 ├── models/                  # Trained models, encoders, best params
 ├── plots/                   # Visualizations generated from EDA
@@ -116,8 +116,14 @@ Original CSV: `data/telco_costumers.csv`
 
 GitHub Actions workflow runs:
 
-- Code style checks (`flake8`)
-- End-to-end pipeline execution
+- Code style checks (`flake8`, config in `.flake8`)
+- End-to-end pipeline execution (Python 3.12, using the tuned hyperparameters saved in `models/*.json`)
+
+Run the same checks locally:
+
+```bash
+flake8 src/ dashboard/ run_pipeline.py
+```
 
 ---
 
@@ -133,4 +139,4 @@ GitHub Actions workflow runs:
 ## Contact
 
 Created by Alexandru NEGULESCU — looking for entry-level roles in **Data analysis/ Data Science / ML Engineering**  
-Let's connect on [LinkedIn](linkedin.com/in/alexandru-negulescu-555a8323b) or check my [GitHub](https://github.com/AlexNegulescu111)
+Let's connect on [LinkedIn](https://www.linkedin.com/in/alexandru-negulescu-555a8323b) or check my [GitHub](https://github.com/AlexNegulescu111)

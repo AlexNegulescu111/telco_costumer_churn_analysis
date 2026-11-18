@@ -1,22 +1,20 @@
+import json
 import sys
 from pathlib import Path
+
+import shap
+
 ROOT = Path(__file__).resolve().parent
 sys.path.append(str(ROOT / "src"))
-from utils import load_data
-from utils import save_model
-from utils import save_kpi
-from utils import save_best_params, load_best_params
-from clean_data import rename_columns
-from clean_data import fix_totalcharges
-from kpi_analysis import compute_kpis
-from preprocessing_model import drop_irrelevant_columns, encode_label, encode_one_hot
-from build_model import split_data, train_model, predict
-from evaluate_model import collect_scores, compare_models
-from tunning_model import tune_logistic_params, tune_xgb_params, tune_cat_params
-import pandas as pd
-import numpy as np
-import shap
-import json
+
+# local modules from src/ (importable only after the sys.path update above)
+from utils import load_data, save_model, save_kpi, save_best_params, load_best_params  # noqa: E402
+from clean_data import rename_columns, fix_totalcharges  # noqa: E402
+from kpi_analysis import compute_kpis  # noqa: E402
+from preprocessing_model import drop_irrelevant_columns, encode_label, encode_one_hot  # noqa: E402
+from build_model import split_data, train_model, predict  # noqa: E402
+from evaluate_model import collect_scores, compare_models  # noqa: E402
+from tunning_model import tune_logistic_params, tune_xgb_params, tune_cat_params  # noqa: E402
 
 # loading the data
 df = load_data()
@@ -35,9 +33,9 @@ name_cat = "best_params_cat"
 
 # in eda.ipynb the columns 'costumer_id', 'gender', 'phone_service',
 #  turned to be statistically irrelevant for churning (chi_2 test) so we'll remove them
-#  from the training/testing data in the model 
+#  from the training/testing data in the model
 df_model = drop_irrelevant_columns(df)
-#--------------------------------------------LOGISTIC REGRESSION -----------------------------------------
+# --------------------------------------------LOGISTIC REGRESSION -----------------------------------------
 # encoding the categorical for model training
 df_logistic = encode_one_hot(df_model)
 x_logistic = df_logistic.drop(columns=["churn"])
@@ -45,7 +43,7 @@ y_logistic = df_logistic["churn"]
 
 # split the data into train/test -> 80/20
 x_log_train, x_log_test, y_log_train, y_log_test = split_data(x_logistic, y_logistic)
-#Tunning the model with the best parameters via optuna
+# Tunning the model with the best parameters via optuna
 # load the params if exist
 # tune the model and save the params if not exist
 param_path = ROOT / "models" / f"{name_log}.json"
@@ -61,7 +59,7 @@ y_log_pred = predict(model_log, x_log_test)
 # collect the mtrics for the model
 collect_scores(y_log_test, y_log_pred, "Logistic regression")
 
-#--------------------------------------------XGBOOST -----------------------------------------
+# --------------------------------------------XGBOOST -----------------------------------------
 
 
 # encoding the categorical for model training - XGBoost.
@@ -72,7 +70,7 @@ y_xg = df_xg["churn"]
 
 # split the data into train/test -> 80/20
 x_xg_train, x_xg_test, y_xg_train, y_xg_test = split_data(x_xg, y_xg)
-#Tunning the model with the best parameters via optuna
+# Tunning the model with the best parameters via optuna
 # load the params if exist
 # tune the model and save the params if not exist
 param_path = ROOT / "models" / f"{name_xg}.json"
@@ -88,7 +86,7 @@ y_xg_pred = predict(model_xg, x_xg_test)
 # collect the mtrics for the model
 collect_scores(y_xg_test, y_xg_pred, "XGBoost")
 
-#--------------------------------------------CATBOOST -----------------------------------------
+# --------------------------------------------CATBOOST -----------------------------------------
 
 
 df_cat = df_model.copy()
@@ -99,7 +97,7 @@ y_cat = df_cat["churn"]
 
 # split
 x_cat_train, x_cat_test, y_cat_train, y_cat_test = split_data(X_cat, y_cat)
-#Tunning the model with the best parameters via optuna
+# Tunning the model with the best parameters via optuna
 # load the params if exist
 # tune the model and save the params if not exist
 param_path = ROOT / "models" / f"{name_cat}.json"
