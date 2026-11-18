@@ -2,6 +2,9 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+MODELS_DIR = ROOT / "models"
+PLOTS_DIR = ROOT / "plots"
+RANDOM_STATE = 42
 
 
 def load_data():
@@ -45,3 +48,10 @@ def load_best_params(name):
     with open(ROOT / "models" / f"{name}.json", "r") as f:
         print("Best params loaded successfully")
         return json.load(f)
+
+
+def save_json(data, path):
+    import json
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4)

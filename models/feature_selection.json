@@ -1,0 +1,116 @@
+[
+    {
+        "feature": "gender",
+        "test": "chi2",
+        "p_value": 0.8921967902255464,
+        "kept": false
+    },
+    {
+        "feature": "partner",
+        "test": "chi2",
+        "p_value": 1.0636217670392265e-27,
+        "kept": true
+    },
+    {
+        "feature": "dependents",
+        "test": "chi2",
+        "p_value": 4.713995608125112e-36,
+        "kept": true
+    },
+    {
+        "feature": "phone_service",
+        "test": "chi2",
+        "p_value": 0.1952454518833495,
+        "kept": false
+    },
+    {
+        "feature": "multiple_lines",
+        "test": "chi2",
+        "p_value": 0.004138967631064781,
+        "kept": true
+    },
+    {
+        "feature": "internet_service",
+        "test": "chi2",
+        "p_value": 3.371396295452316e-131,
+        "kept": true
+    },
+    {
+        "feature": "online_security",
+        "test": "chi2",
+        "p_value": 1.733379744968208e-151,
+        "kept": true
+    },
+    {
+        "feature": "online_backup",
+        "test": "chi2",
+        "p_value": 1.056679623595831e-106,
+        "kept": true
+    },
+    {
+        "feature": "device_protection",
+        "test": "chi2",
+        "p_value": 1.500991784815355e-96,
+        "kept": true
+    },
+    {
+        "feature": "tech_support",
+        "test": "chi2",
+        "p_value": 2.785783227183797e-146,
+        "kept": true
+    },
+    {
+        "feature": "streaming_tv",
+        "test": "chi2",
+        "p_value": 1.1732133320049587e-65,
+        "kept": true
+    },
+    {
+        "feature": "streaming_movies",
+        "test": "chi2",
+        "p_value": 2.1288756998298284e-66,
+        "kept": true
+    },
+    {
+        "feature": "contract",
+        "test": "chi2",
+        "p_value": 1.6178507793068554e-207,
+        "kept": true
+    },
+    {
+        "feature": "paperless_billing",
+        "test": "chi2",
+        "p_value": 9.403693565942979e-50,
+        "kept": true
+    },
+    {
+        "feature": "payment_method",
+        "test": "chi2",
+        "p_value": 7.571918942899567e-118,
+        "kept": true
+    },
+    {
+        "feature": "senior_citizen",
+        "test": "ttest",
+        "p_value": 2.5616276873191375e-22,
+        "kept": true
+    },
+    {
+        "feature": "tenure",
+        "test": "ttest",
+        "p_value": 4.4353325094063175e-178,
+        "kept": true
+    },
+    {
+        "feature": "monthly_charges",
+        "test": "ttest",
+        "p_value": 1.3853223335315606e-61,
+        "kept": true
+    },
+    {
+        "feature": "total_charges",
+        "test": "ttest",
+        "p_value": 1.797079241245077e-57,
+        "kept": true
+    }
+]

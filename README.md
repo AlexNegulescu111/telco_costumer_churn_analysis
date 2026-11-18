@@ -47,20 +47,37 @@ telco_costumer_churn_analysis/
 
 ## Machine Learning Models
 
-Implemented and compared:
+Implemented and compared: **Logistic Regression**, **XGBoost** and **CatBoost**.
 
-- **Logistic Regression** (with Optuna tuning)
-- **XGBoost** (selected final model)
-- **CatBoost**
+### Methodology
+- **Stratified 80/20 train/test split** at the start. The test set is used only once, for the final report.
+- **Feature selection on the training set only**: chi-squared test (categorical) and Welch t-test (numerical), p < 0.05. `customer_id` is always excluded.
+- **One scikit-learn `Pipeline` per model** (`ColumnTransformer` + estimator), fitted inside every CV fold:
+  - Logistic Regression: one-hot encoding + standard scaling
+  - XGBoost: one-hot encoding
+  - CatBoost: native categorical handling
+- **Hyperparameter tuning with Optuna** (seeded TPE sampler) using stratified 5-fold cross-validation on train, optimising **PR-AUC** (average precision).
+- **Decision threshold** chosen to maximise F1 on out-of-fold training predictions, not the default 0.5.
+- **Model selection** by cross-validated PR-AUC, never by test score.
+- Metrics: ROC-AUC, PR-AUC, accuracy, precision, recall, F1 and confusion matrix, compared with a baseline that predicts the churn rate.
+- Interpretability with **SHAP** (`plots/shap_importance.png`).
 
-### Features:
-- Irrelevant variables dropped based on Chi2 / t-test
-- Categorical encoding:
-  - OneHot for Logistic Regression
-  - Label Encoding + saved encoders for XGBoost
-- Hyperparameter tuning with Optuna
-- Model evaluation: Accuracy, Precision, Recall, F1, Confusion Matrix
-- Interpretability with **SHAP** values
+### Results
+
+Test set (1,409 customers, never used for tuning, threshold or model selection):
+
+| Model | ROC-AUC | PR-AUC | Precision | Recall | F1 |
+|---|---|---|---|---|---|
+| Logistic Regression | 0.842 | 0.636 | 0.537 | 0.738 | 0.622 |
+| XGBoost | 0.848 | 0.664 | 0.552 | 0.743 | 0.633 |
+| **CatBoost** (selected) | 0.845 | 0.661 | 0.532 | 0.773 | 0.630 |
+| Baseline (churn rate) | 0.500 | 0.265 | – | – | – |
+
+CatBoost has the best cross-validated PR-AUC (0.671), so it is the saved model. On the test set the three models are within about 0.01 of each other. The selected model catches **77% of churners**, and about half of the customers it flags actually churn.
+
+The strongest churn drivers (SHAP) are **contract type**, **internet service**, **tenure** and **tech support**.
+
+Outputs: `models/churn_model.joblib` (the full pipeline, which accepts a raw customer row), `models/model_meta.json` (selected model, threshold, features), `models/metrics.json` (CV and test metrics), `models/feature_selection.json` and `plots/model_evaluation.png` (ROC curves, PR curves, confusion matrices).
 
 ---
 
@@ -76,22 +93,22 @@ Includes:
 - KPIs live
 - Interactive filtering (Contract, InternetService, etc.)
 - Customer churn visualizations
-- Churn prediction for a new customer (with probability)
+- Churn prediction for a new customer (probability + risk label using the tuned threshold)
 
 ---
 
 ## Run Pipeline
 
 ```bash
-python run_pipeline.py
+python run_pipeline.py            # uses the tuned hyperparameters saved in models/best_params_*.json
+python run_pipeline.py --tune     # re-runs Optuna tuning (30 trials per model, about 10-15 min)
 ```
 
-- Preprocesses data
-- Computes and saves KPIs
-- Trains all 3 models with best params
-- Compares performance
-- Saves best model (XGBoost)
-- Generates SHAP explanation
+- Cleans the data, computes and saves the KPIs
+- Splits train/test (stratified) and selects features on train
+- Tunes (or loads) hyperparameters, cross-validates and chooses the threshold for each model
+- Selects the best model by CV PR-AUC and reports all models and the baseline on the test set
+- Saves the best pipeline, metrics, the evaluation plots and the SHAP plot
 
 ---
 

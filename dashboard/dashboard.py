@@ -9,13 +9,18 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT / "src"))
 DATA_PATH = ROOT / "data" / "telco_costumers.csv"
 KPI_PATH = ROOT / "data" / "kpi_summary.json"
-MODEL_PATH = ROOT / "models" / "model_xgb.joblib"
+MODEL_PATH = ROOT / "models" / "churn_model.joblib"
+META_PATH = ROOT / "models" / "model_meta.json"
 PLOTS_PATH = ROOT / "plots"
-FEATURES_PATH = ROOT / "models" / "xgb_features.json"
 
 
 # === Load data ===
 df = pd.read_csv(DATA_PATH)
+
+# === Load model (full sklearn pipeline) and its metadata ===
+model = joblib.load(MODEL_PATH)
+with open(META_PATH, "r") as f:
+    meta = json.load(f)
 
 # === Load KPIs ===
 with open(KPI_PATH, "r") as f:
@@ -62,6 +67,8 @@ plot_files = [
     "standard_services.png",
     "advanced_services.png",
     "billing_&_contract.png",
+    "model_evaluation.png",
+    "shap_importance.png",
 ]
 
 for plot_file in plot_files:
@@ -129,28 +136,19 @@ if submit:
             }
         ]
     )
-    input_data["churn"] = "No"
-    # Apply same preprocessing as in training
     from clean_data import rename_columns
 
     input_data = rename_columns(input_data)
-    input_data = input_data.drop(columns=["gender", "phone_service", "churn"])
-    encoders = joblib.load(ROOT / "models" / "label_encoders.joblib")
+    # the saved pipeline does all the preprocessing (feature selection, encoding, scaling);
+    # columns it does not use (e.g. customer_id, gender) are ignored
+    input_data = input_data.reindex(columns=meta["input_columns"])
+    input_data["customer_id"] = "new-customer"
 
-    for col in input_data.select_dtypes(include="object").columns:
-        if col in encoders:
-            input_data[col] = encoders[col].transform(input_data[col])
-        else:
-            st.warning(f"Encoder for column '{col}' not found!")
+    proba = model.predict_proba(input_data)[0][1]  # probability of churn
+    threshold = meta["threshold"]
 
-    with open(FEATURES_PATH, "r") as f:
-        expected_features = json.load(f)
-    input_data = input_data.reindex(columns=expected_features, fill_value=0)
-
-    # Load model and predict
-    model = joblib.load(MODEL_PATH)
-    proba = model.predict_proba(input_data)[0][1]  # probability "Yes"
-    prediction = int(proba >= 0.5)
-    label = "Yes" if prediction == 1 else "No"
-
-    st.success(f"There is a probability of {proba:.2%} for this client to churn")
+    message = f"Churn probability: {proba:.2%} (model: {meta['model']}, decision threshold {threshold:.0%})"
+    if proba >= threshold:
+        st.error(f"High churn risk. {message}")
+    else:
+        st.success(f"Low churn risk. {message}")
