@@ -89,11 +89,13 @@ Run the dashboard:
 streamlit run dashboard/dashboard.py
 ```
 
-Includes:
-- KPIs live
-- Interactive filtering (Contract, InternetService, etc.)
-- Customer churn visualizations
-- Churn prediction for a new customer (probability + risk label using the tuned threshold)
+Tabs:
+- **Overview**: KPIs and charts recomputed live from the sidebar filters (contract, internet service, payment method, senior citizen, tenure), with deltas against all customers. Charts show churn rate by contract, internet service, tenure group and payment method, plus monthly charges for churned vs retained customers.
+- **Model performance**: test-set metrics of every model and the baseline, ROC and precision-recall curves, confusion matrices and global SHAP importance.
+- **Predict churn**: churn probability and risk label (using the tuned decision threshold) for a new customer, with a per-customer SHAP explanation of the top drivers. Total charges default to tenure × monthly charges.
+- **Data**: the filtered customers, downloadable as CSV.
+
+The dashboard needs a trained model (`python run_pipeline.py`). Without one, the Overview and Data tabs still work.
 
 ---
 
