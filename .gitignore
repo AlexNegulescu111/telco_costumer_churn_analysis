@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Editors
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Training artefacts
+catboost_info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.pytest_cache/

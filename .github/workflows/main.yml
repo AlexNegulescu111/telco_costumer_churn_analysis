@@ -1,4 +1,4 @@
-name: Run pipeline + check style
+name: CI
 
 on:
   push:
@@ -9,22 +9,25 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.12"
+          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install flake8
+        run: pip install -r requirements-dev.txt
 
       - name: Check code style (flake8)
-        run: flake8 src/
+        run: flake8 src/ dashboard/ run_pipeline.py tests/
 
-      - name: Run pipeline
-        run: python run_pipeline.py
+      # Unit tests, an end-to-end pipeline run (saved hyperparameters, artefacts written to a
+      # temporary directory) and a Streamlit dashboard test
+      - name: Run tests
+        run: pytest -v
