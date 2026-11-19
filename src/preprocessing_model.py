@@ -28,7 +28,7 @@ def select_features(x_train, y_train, alpha=0.05, return_log=False):
     y = pd.Series(y_train, index=x.index)
 
     categorical, numerical, log = [], [], []
-    for col in x.select_dtypes(include="object").columns:
+    for col in x.select_dtypes(include=["object", "str"]).columns:
         _, p, _, _ = chi2_contingency(pd.crosstab(x[col], y))
         log.append((col, "chi2", p, p < alpha))
         if p < alpha:

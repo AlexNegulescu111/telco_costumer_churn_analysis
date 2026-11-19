@@ -64,7 +64,7 @@ def get_metrics():
 try:
     df = get_data()
 except FileNotFoundError:
-    st.error("Dataset not found: expected `data/telco_costumers.csv`.")
+    st.error("Dataset not found: expected `data/telco_customers.csv`.")
     st.stop()
 
 model, meta = get_model()

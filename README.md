@@ -15,19 +15,48 @@ This project focuses on analyzing customer churn in the telecom sector and predi
 
 ---
 
+## Key Findings & Recommendations
+
+Churned customers represent **30.5% of monthly revenue** ($139k of $456k), more than their 26.5% share of customers, because they tend to pay more.
+
+| Finding (churn rate) | Recommendation |
+|---|---|
+| **Contract**: month-to-month 42.7% vs one year 11.3% and two year 2.8%. 89% of churners are on month-to-month contracts. | Offer discounts or perks for moving to annual contracts, starting with high-risk month-to-month customers. |
+| **Tenure**: 47.4% churn in the first 12 months vs 9.5% after 4 years. 56% of churners leave within their first year. | Run an onboarding and early-life retention programme for the first 12 months. |
+| **Internet service**: fiber optic 41.9% vs DSL 19.0%. Fiber customers also pay more ($91.5 vs $58.1 per month on average). | Review fiber pricing and service quality, as fiber is the largest group of customers and has the highest churn. |
+| **Support services**: churn is about 42% without tech support or online security vs about 15% with them. | Bundle tech support and online security into fiber and month-to-month plans, or offer free trials of them. |
+| **Payment**: electronic check 45.3% vs 15-19% for automatic payments and mailed checks. | Encourage automatic payment methods (for example with a small billing credit). |
+
+The model turns these patterns into a per-customer risk score. At the chosen threshold it flags 77% of the customers who churn, so retention offers can be targeted at the flagged customers instead of the whole base.
+
+---
+
 ## Project Structure
 
 ```
 telco_costumer_churn_analysis/
-├── data/                    # CSV input + saved KPIs
-├── models/                  # Trained models, encoders, best params
-├── plots/                   # Visualizations generated from EDA
-├── src/                     # Modular Python source code
-├── dashboard/               # Streamlit dashboard
-├── notebooks/               # Optional: Jupyter notebooks (EDA etc.)
-├── run_pipeline.py          # End-to-end training pipeline
-├── requirements.txt
-└── README.md
+├── data/
+│   ├── telco_customers.csv      # raw dataset (Kaggle)
+│   └── kpi_summary.json         # business KPIs written by the pipeline
+├── src/
+│   ├── clean_data.py            # column renaming, total_charges fix
+│   ├── kpi_analysis.py          # business KPIs
+│   ├── preprocessing_model.py   # target encoding, feature selection, ColumnTransformer
+│   ├── build_model.py           # train/test split, model pipelines
+│   ├── tuning_model.py          # Optuna tuning with stratified CV
+│   ├── evaluate_model.py        # metrics, threshold selection, evaluation plots
+│   ├── explain_model.py         # per-customer SHAP explanations
+│   ├── visualizations.py        # EDA plot helpers (used by the notebook)
+│   └── utils.py                 # paths, data loading, JSON / model I/O
+├── models/                      # trained pipeline, metadata, metrics, tuned hyperparameters
+├── plots/                       # EDA plots, model evaluation and SHAP plots
+├── dashboard/dashboard.py       # Streamlit dashboard
+├── notebooks/eda.ipynb          # exploratory data analysis
+├── tests/                       # pytest suite (unit tests, pipeline smoke test, dashboard test)
+├── docs/                        # dashboard screenshots
+├── run_pipeline.py              # end-to-end training pipeline
+├── requirements.txt             # runtime dependencies
+└── requirements-dev.txt         # + pytest, flake8, black
 ```
 
 ---
@@ -79,6 +108,8 @@ The strongest churn drivers (SHAP) are **contract type**, **internet service**, 
 
 Outputs: `models/churn_model.joblib` (the full pipeline, which accepts a raw customer row), `models/model_meta.json` (selected model, threshold, features), `models/metrics.json` (CV and test metrics), `models/feature_selection.json` and `plots/model_evaluation.png` (ROC curves, PR curves, confusion matrices).
 
+![Model evaluation](plots/model_evaluation.png)
+
 ---
 
 ## Dashboard (Streamlit)
@@ -88,6 +119,10 @@ Run the dashboard:
 ```bash
 streamlit run dashboard/dashboard.py
 ```
+
+![Dashboard overview](docs/dashboard_overview.png)
+
+![Churn prediction with explanation](docs/dashboard_prediction.png)
 
 Tabs:
 - **Overview**: KPIs and charts recomputed live from the sidebar filters (contract, internet service, payment method, senior citizen, tenure), with deltas against all customers. Charts show churn rate by contract, internet service, tenure group and payment method, plus monthly charges for churned vs retained customers.
@@ -104,6 +139,7 @@ The dashboard needs a trained model (`python run_pipeline.py`). Without one, the
 ```bash
 python run_pipeline.py            # uses the tuned hyperparameters saved in models/best_params_*.json
 python run_pipeline.py --tune     # re-runs Optuna tuning (30 trials per model, about 10-15 min)
+python run_pipeline.py --output-dir /tmp/run   # write models/, plots/ and KPIs somewhere else
 ```
 
 - Cleans the data, computes and saves the KPIs
@@ -114,12 +150,14 @@ python run_pipeline.py --tune     # re-runs Optuna tuning (30 trials per model, 
 
 ---
 
-## Requirements
+## Setup
 
-Install all dependencies:
+Python 3.12 is used in CI.
 
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt      # or requirements-dev.txt for tests and linting
 ```
 
 ---
@@ -127,28 +165,29 @@ pip install -r requirements.txt
 ## Data Source
 
 Dataset: [Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)  
-Original CSV: `data/telco_costumers.csv`
+Original CSV: `data/telco_customers.csv`
 
 ---
 
-## CI/CD Workflow
-
-GitHub Actions workflow runs:
-
-- Code style checks (`flake8`, config in `.flake8`)
-- End-to-end pipeline execution (Python 3.12, using the tuned hyperparameters saved in `models/*.json`)
-
-Run the same checks locally:
+## Tests & CI
 
 ```bash
-flake8 src/ dashboard/ run_pipeline.py
+pip install -r requirements-dev.txt
+flake8 src/ dashboard/ run_pipeline.py tests/
+pytest
 ```
+
+The test suite (under a minute) covers:
+- data cleaning, KPIs, feature selection, preprocessing, model pipelines, metrics and explanations, on small synthetic datasets with a known signal
+- an end-to-end run of `run_pipeline.py` on the real data, written to a temporary directory so the committed models are not touched. It checks that every model beats the baseline.
+- the Streamlit dashboard (filters, empty selection, prediction) through `streamlit.testing.AppTest`
+
+GitHub Actions runs flake8 and pytest on every push and pull request to `main`.
 
 ---
 
 ## Future Improvements
 
-- Add SHAP plot per prediction in dashboard
 - Integrate live retraining via Streamlit
 - Add customer segmentation or clustering
 - Deploy dashboard online (Streamlit Cloud)

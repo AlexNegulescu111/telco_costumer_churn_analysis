@@ -22,13 +22,12 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install flake8
+        run: pip install -r requirements-dev.txt
 
       - name: Check code style (flake8)
-        run: flake8 src/ dashboard/ run_pipeline.py
+        run: flake8 src/ dashboard/ run_pipeline.py tests/
 
-      # Uses the tuned hyperparameters saved in models/*.json, so Optuna tuning is skipped
-      - name: Run pipeline
-        run: python run_pipeline.py
+      # Unit tests, an end-to-end pipeline run (saved hyperparameters, artefacts written to a
+      # temporary directory) and a Streamlit dashboard test
+      - name: Run tests
+        run: pytest -v
